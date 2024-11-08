@@ -1,0 +1,8 @@
+numpy>=1.16
+jinja2
+scipy
+pandas>=0.24
+statsmodels>=0.9
+seaborn>=0.9
+matplotlib>=3
+patsy
