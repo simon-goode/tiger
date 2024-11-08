@@ -5,6 +5,7 @@ import statsmodels.api as sm
 import statsmodels.stats.api as sms
 import seaborn as sns
 import matplotlib.pyplot as plt
+from .discrete import Logit
 
 __all__ = ['plot_residuals_vs_predictors', 'plot_residuals_vs_fitted', 'pp_plot', 'qq_plot', 'heteroskedasticity_test', 'partial_regression_plot']
 
@@ -199,3 +200,45 @@ def variance_inflation_factors(X, *, vif_threshold=10):
                           name="VIF>" + str(vif_threshold))
     # Final dataframe:
     return pd.concat([vif, tol, vif_thres], axis='columns')
+
+
+def akaike_ic(model):
+    """returns the Akaike Information Criterion (AIC) of the model"""
+    n = len(model.resid)
+    k = len(model.X_list)+1
+
+    rss = np.sum(model.resid ** 2)
+    if isinstance(model, Logit):
+        llh = model.log_likelihood
+    else:
+        llh = -n / 2 * np.log(rss / n)
+
+    aic = 2 * k - 2 * llh
+    return aic
+
+
+def bayesian_ic(model):
+    """returns the Bayesian Information Criterion (AIC) of a model"""
+    n = len(model.resid)
+    k = len(model.X_list)+1
+
+    rss = np.sum(model.resid ** 2)
+    if isinstance(model, Logit):
+        llh = model.log_likelihood
+    else:
+        llh = -n / 2 * np.log(rss / n)
+
+    bic = k * np.log(n) - 2 * llh
+    return bic
+
+
+def mean_errors(model):
+    """returns:
+        - Mean Squared Error (MSE)
+        - Mean Absolute Error (MAE)
+        - Root Mean Squared Error (RMSE)"""
+    mse = np.mean(model.resid ** 2)
+    mae = np.mean(np.abs(model.resid))
+    rmse = np.sqrt(mse)
+
+    return mse, mae, rmse
