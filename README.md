@@ -4,3 +4,10 @@
 </p>
 
 Tiger is an Applied Econometrics library for Python. Your one-stop shop for econometric modeling, regression analysis, model performance testing, and much more! This package streamlines econometric analysis by harnessing the raw power of Numpy and Pandas — while maintaining the breathe-easy syntax of R and Stata.
+
+### Example
+```python
+from tiger.linear import OLS
+model = OLS(df, ['income'], ['age', 'gen', 'yoe']).fit()
+model.summary
+```
