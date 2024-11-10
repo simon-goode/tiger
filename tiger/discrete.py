@@ -39,10 +39,10 @@ class Logit:
     Attributes (main):
         model_selection_stats (dict): Model selection stats such as
             log-likelihood in one place.
-        results_output (Statsmodels Summary): Summary object that displays the
+        summary (Statsmodels Summary): Summary object that displays the
             main results from the model.  Suitable for printing in various
             formats.
-        results_output_standardized (pd Styler): Summary object that
+        summary_standardized (pd Styler): Summary object that
             displays the main results from the model, in the form of
             standardized estimates.  NOT suitable for print statements.
         odds_ratios (pd.Series): odds ratio for each regressor in the model.
@@ -130,7 +130,7 @@ class Logit:
         There are dozens of attributes that store such information.
 
         For a neater summary of the model, use these class attributes:
-        - results_output: the object returned by results.summary()
+        - summary: the object returned by results.summary()
         - model_selection_stats: an assortment of measures contained in
             results, which are used commonly for model selection
             (e.g. log-likelihood)
@@ -138,7 +138,7 @@ class Logit:
         return self._results
 
     @property
-    def results_output(self):
+    def summary(self):
         """statsmodels.iolib.summary.Summary: tabulated summary of the model.
         The output is well-suited for printing.
 
@@ -147,10 +147,10 @@ class Logit:
         If the model was not fitted before an attempt to access the attribute,
         then the model will be fitted and the results are returned.
         """
-        return self._results_output
+        return self._summary
 
     @property
-    def results_output_standardized(self):
+    def summary_standardized(self):
         """pandas.io.formats.style.Styler: tabulated summary of the
         unstandardized and standardized estimates from the regression.
 
@@ -178,7 +178,7 @@ class Logit:
         is needed.
         Other attributes can also be accessed for exporting the data.
         """
-        return self._results_output_standardized
+        return self._summary_standardized
 
     @property
     def model_selection_stats(self):
@@ -234,7 +234,7 @@ class Logit:
             print("Model fitting in progress...")
         with _SuppressPrints():  # hide Statsmodels printing
             self._results = model.fit()
-        self._results_output = self._results.summary(alpha=self._alpha)
+        self._summary = self._results.summary(alpha=self._alpha)
 
         model_selection_dict = {"log_likelihood": self._results.llf,
                                 "r_squared_pseudo": self._results.prsquared,
@@ -277,42 +277,42 @@ class Logit:
         output_indices = results_obj.params.drop('const').index
         output_cols = ['coef', 't', 'P>|t|',
                        'coef_stdX', 'coef_stdXy', 'stdev_X']
-        std_results_output = pd.DataFrame(index=output_indices,
+        std_summary = pd.DataFrame(index=output_indices,
                                           columns=output_cols)
-        std_results_output = std_results_output.rename_axis(self._y.name)
+        std_summary = std_summary.rename_axis(self._y.name)
 
         # Gather values from model that took the raw data
-        std_results_output['coef'] = self._results.params
-        std_results_output['t'] = self._results.tvalues  # col 1
-        std_results_output['P>|t|'] = self._results.pvalues  # col 2
+        std_summary['coef'] = self._results.params
+        std_summary['t'] = self._results.tvalues  # col 1
+        std_summary['P>|t|'] = self._results.pvalues  # col 2
         if not results_obj.use_t:
             # Output will be labelled as z-scores, not t-values
-            std_results_output.rename(columns={'t': 'z', 'P>|t|': 'P>|z|'},
+            std_summary.rename(columns={'t': 'z', 'P>|t|': 'P>|z|'},
                                       inplace=True)
-        test_dist_name = std_results_output.columns[1]  # store for dict later
-        p_col_name = std_results_output.columns[2]  # store for dict later
+        test_dist_name = std_summary.columns[1]  # store for dict later
+        p_col_name = std_summary.columns[2]  # store for dict later
         # Gather values from the model that took the standardized data
-        std_results_output['coef_stdX'] = results_obj.params
-        std_results_output['stdev_X'] = stdev_X
+        std_summary['coef_stdX'] = results_obj.params
+        std_summary['stdev_X'] = stdev_X
 
         # Now calculate std_XY (via Long's method):
         var_explained = self._results.fittedvalues.std() ** 2
         var_ystar = var_explained + np.pi ** 2 / 3  # ystar is latent variable
-        std_results_output['coef_stdXy'] = ((std_results_output['coef'] *
+        std_summary['coef_stdXy'] = ((std_summary['coef'] *
                                              stdev_X)
                                             / np.sqrt(var_ystar))
 
         # Make Pandas Styler object
-        std_results_output = std_results_output\
+        std_summary = std_summary\
             .style.format({'coef': "{:+.4f}",
                            test_dist_name: '{:+.3f}',
                            p_col_name: '{:.3f}',
                            'coef_stdX': '{:+.4f}',
                            'coef_stdXy': '{:+.4f}',
                            'stdev_X': '{:.4f}'})
-        std_results_output.set_caption(
+        std_summary.set_caption(
             "Unstandardized and Standardized Estimates")
-        self._results_output_standardized = std_results_output
+        self._summary_standardized = std_summary
         pass
 
     def predict(self, X_predict, *, within_sample=True):
