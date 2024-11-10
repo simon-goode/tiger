@@ -1,7 +1,9 @@
 import numpy as np
-import pandas as pd
 import sys
 import os
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+import pandas as pd
 import itertools
 __all__ = ['BlankEncoder', 'InterEncoder', 'get_df_cols_diff']
 
@@ -22,7 +24,7 @@ class _SuppressPrints:
 
 def _df_input_conditions(X, y):
     if (y.isin([np.inf, -np.inf]).any() or
-        len(X[X.isin([np.inf, -np.inf]).any(1)]) > 0):
+        len(X[X.isin([np.inf, -np.inf]).any(axis=1)]) > 0):
         raise ValueError(
             '''remove infinite values from dataset before modeling''')
     if (len(X.select_dtypes(['category']).columns.tolist()) > 0
