@@ -1,3 +1,5 @@
+import warnings
+warnings.simplefilter(action='ignore', category=UserWarning)
 import numpy as np
 import scipy as sp
 import pandas as pd
@@ -15,7 +17,7 @@ def plot_residuals_vs_fitted(residual_values, fitted_values, *, ax=None):
     useful for determining if linearity holds for a model"""
     if ax is None:
         ax = plt.gca()
-    cplot = sns.regplot(fitted_values, residual_values, ax=ax, fit_reg=False)
+    cplot = sns.regplot(x=fitted_values, y=residual_values, ax=ax, fit_reg=False)
     fig = cplot.figure
     ax.grid(True, linewith=0.5)
     ax.set_title("Residuals vs. Fitted Values")
@@ -30,7 +32,7 @@ def plot_residuals_vs_predictors(model, *, predictor, ax=None):
         raise ValueError("predictor not found in model")
     if ax is None:
         ax = plt.gca()
-    cplot = sns.regplot(model.df.loc[:,predictor], model.results.resid, ax=ax, fit_reg=False)
+    cplot = sns.regplot(x=model.df.loc[:, predictor], y=model.results.resid, ax=ax, fit_reg=False)
     fig = cplot.figure
     ax.grid(True, linewidth=0.5)
     ax.set_title("Residuals vs Regressor Values\n".format(predictor))
@@ -72,7 +74,7 @@ def partial_regression_plot(model, df, regressor, *, annotate_results=False, ax=
     if (regressor not in X_list and regressor in df.columns and not df[regressor].isnull().any()):
         model_ylist = (sm.OLS(df[y_list], sm.add_constant(df[X_list])).fit(disp=0))
         model_var = (sm.OLS(df[regressor], sm.add_constant(df[X_list])).fit(disp=0))
-        cplot = sns.regplot(model_var.resid, model_ylist.resid, ci=None, truncate=True, line_kws={'color': 'red'})
+        cplot = sns.regplot(x=model_var.resid, y=model_ylist.resid, ci=None, truncate=True, line_kws={'color': 'red'})
         
         if annotate_results:
             model_full = (sm.OLS(model_ylist.resid, sm.add_constant(df[X_list + [regressor]])).fit(disp=0))
@@ -90,7 +92,7 @@ def partial_regression_plot(model, df, regressor, *, annotate_results=False, ax=
         cols = list(set(X_list)) - set([regressor])
         model_ylist = (sm.OLS(df[y_list], sm.add_constant(df[cols])).fit(disp=0))
         model_var = (sm.OLS(df[regressor], sm.add_constant(df[cols])).fit(disp=0))
-        cplot = sns.regplot(model_var.resid, model_ylist.resid, ci=None, trucate=True, line_kws={'color': 'red'})
+        cplot = sns.regplot(x=model_var.resid, y=model_ylist.resid, ci=None, trucate=True, line_kws={'color': 'red'})
         if annotate_results:
             ax.set_title(('Partial regression plot: {}\n(b={:.4f}, t={:.3f})'
                           .format(regressor,
