@@ -5,7 +5,7 @@
 
 Tiger is an Applied Econometrics library for Python. Your one-stop shop for econometric modeling, regression analysis, model performance testing, and much more! This package streamlines econometric analysis by harnessing the raw power of Numpy and Pandas — while maintaining the breathe-easy syntax of R and Stata.
 
-### Example
+### Example Regression
 ```python
 from tiger.linear import OLS
 model = OLS(df, ['income'], ['age', 'gen', 'yoe']).fit()
@@ -44,3 +44,22 @@ Notes:
 [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 ```
 </details>
+
+### Bayesian Example
+```python
+from tiger.discrete import Logit
+from tiger.diagnostics import bayesian_ic
+model = Logit(df, ['rain'], ['latitude', 'month']).fit()
+BIC = bayesian_ic(model)
+```
+The [Bayesian Information Criterion](https://en.wikipedia.org/wiki/Bayesian_information_criterion) is an heuristic model performance diagnostic that penalizes adding additional regressors, helping prevent overfitting in a model.
+
+### Dependencies
+- pandas
+- numpy
+- matplotlib
+- seaborn
+- statsmodels
+- jinja2
+- scipy
+- patsy
